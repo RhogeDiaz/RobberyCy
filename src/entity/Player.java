@@ -7,15 +7,16 @@ import javax.imageio.ImageIO;
 
 import main.GamePanel;
 import main.KeyHandler;
+import object.SuperObject;
 
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
-
+    int hasKey = 0;
     private boolean keyProcessed = false;
     private long lastMoveTime = 0; // Track the last movement time
     private final int moveDelay = 0; // Delay in milliseconds
-    private String currentMap = "map1"; // Track the current map
+    public String currentMap = "map1"; // Track the current map
 
     public Player(GamePanel gp, KeyHandler keyH){
         this.gp = gp;
@@ -23,7 +24,9 @@ public class Player extends Entity {
         solidArea = new Rectangle();
         solidArea.x = 0;
         solidArea.y = 8;
-        solidArea.width = 24;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+        solidArea.width = 16;
         solidArea.height = 16;
 
         setDefaultValues();
@@ -35,7 +38,7 @@ public class Player extends Entity {
         worldX = gp.tileSize * 2;
         worldY = gp.tileSize * 12;
         speed = gp.tileSize / 8;
-        direction = "right";
+        direction = "down";
     }
 
     public void getPlayerImage() {
@@ -53,37 +56,41 @@ public class Player extends Entity {
         }
     }
 
+// In entity/Player.java
+
     @Override
     public void update() {
-        long currentTime = System.currentTimeMillis(); // Get the current time
+        // 1. ALWAYS RESET collisionOn at the start of the frame.
+        // This is crucial for correctly handling movement every frame.
+        collisionOn = false;
 
-        if (!keyProcessed && (currentTime - lastMoveTime >= moveDelay)) {
+        // 2. Determine player's intended direction based on CURRENT key presses.
+        // This 'if-else if' chain ensures 'direction' is set based on priority (e.g., up > down)
+        // if multiple keys are pressed, or to the last pressed key.
+        if (keyH.upPressed) {
+            direction = "up";
+        } else if (keyH.downPressed) {
+            direction = "down";
+        } else if (keyH.leftPressed) {
+            direction = "left";
+        } else if (keyH.rightPressed) {
+            direction = "right";
+        }
+        // If no movement keys are pressed, 'direction' will retain its last value.
+        // This is fine for animation purposes, but the movement itself will be gated below.
 
-            if(keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true){
-            if (keyH.upPressed) {
-                direction = "up";
-                // keyProcessed = true;
-                lastMoveTime = currentTime;
-            } else if (keyH.downPressed) {
-                direction = "down";
-                // keyProcessed = true;
-                lastMoveTime = currentTime;
-            } else if (keyH.leftPressed) {
-                direction = "left";
-                // keyProcessed = true;
-                lastMoveTime = currentTime;
-            } else if (keyH.rightPressed) {
-                direction = "right";
-                // keyProcessed = true;
-                lastMoveTime = currentTime; 
-            }
-        
-            collisionOn = false;
-            gp.cChecker.checkTile(this);
 
-            if(collisionOn == false){
+        // 3. Perform all collision checks. These should run every frame.
+        gp.cChecker.checkTile(this); // Check for tile collisions
+        int objIndex = gp.cChecker.checkObject(this, true); // Check for object collisions/interactions
+        pickUpObject(objIndex); // Process object interaction
 
-                switch (direction) {
+
+        // 4. Move the player ONLY IF movement keys are actively pressed AND no collision was detected.
+        // This 'if' statement is CRUCIAL to stop movement when keys are released.
+        if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+            if (collisionOn == false) { // Only move if no collision was detected
+                switch (direction) { // 'direction' will be the one set in step 2
                     case "up":
                         worldY -= speed;
                         break;
@@ -96,10 +103,16 @@ public class Player extends Entity {
                     case "right":
                         worldX += speed;
                         break;
-                    default:
+                    // No 'default' case needed here, as 'direction' will always be one of the above if a key is pressed.
                 }
             }
-        // Update sprite animation
+        }
+        // If no movement keys are pressed, the player will not move because the outer
+        // 'if (keyH.upPressed || ...)' condition is false.
+        // If collisionOn is true, the player will not move even if a key is pressed.
+
+
+        // 5. Update sprite animation (this should run even if the player is stuck or idle for animation)
         spriteCounter++;
         if (spriteCounter > 12) { // Adjust the speed of sprite animation
             if (spriteNum == 1) {
@@ -109,58 +122,152 @@ public class Player extends Entity {
             }
             spriteCounter = 0; // Reset the counter
         }
-    }
-    }
 
-        // Check if the player has moved outside the map boundaries
+        // 6. Check for map boundaries/changes (runs every frame)
         if (worldX < 0 || worldX >= gp.maxScreenCol * gp.tileSize || worldY < 0 || worldY >= gp.maxScreenRow * gp.tileSize) {
             handleMapChange();
         }
 
-        // Reset keyProcessed when no keys are pressed
-        if (!keyH.upPressed && !keyH.downPressed && !keyH.leftPressed && !keyH.rightPressed) {
-            keyProcessed = false;
-        }
+        // *** IMPORTANT: REMOVE THESE FIELDS AND ANY OTHER RELATED LOGIC ***
+        // Delete these variable declarations from your Player class if they still exist:
+        // private boolean keyProcessed;
+        // private long lastMoveTime;
+        // private final long moveDelay = 100; // Or whatever value you used
+        // Also remove the 'long currentTime = System.currentTimeMillis();' from the update method.
     }
 
-    private void handleMapChange() {
-        if (worldX < 0) {
-            if (currentMap.equals("map1")) {
-                gp.tileM.changeMap("map3"); // Move to map3 when exiting left from map1
-                currentMap = "map3";
-            } else if (currentMap.equals("map3")) {
-                gp.tileM.changeMap("map2"); // Move to map2 when exiting left from map3
-                currentMap = "map2";
-            } else if (currentMap.equals("map2")) {
-                gp.tileM.changeMap("map1"); // Move to map1 when exiting left from map2
-                currentMap = "map1";
+    // In entity/Player.java
+
+    // Assuming this method is called within Player, and 'gp' is available
+// You might want to rename this to interactObject and put all interaction logic here,
+// as we discussed in a previous step.
+    public void pickUpObject(int i) { // Changed 'i' to 'index' for clarity
+
+        if (i != 999) { // 999 means no object was collided with
+            SuperObject obj = gp.currentMapObjects.get(i); // Get the object instance
+
+            String objectName = obj.name; // Get the name for specific handling
+
+            switch (objectName) {
+                case "Key":
+                    System.out.println("You picked up a Key!");
+                    hasKey++;
+                    gp.currentMapObjects.remove(i);
+                    System.out.println("Key: " + hasKey);
+                    break;
+                case "Door Blue":
+                    System.out.println("You touched a Door!");
+                    if(hasKey > 0){
+                        gp.currentMapObjects.remove(i);
+                        hasKey--;
+                    }
+                    System.out.println("Key: " + hasKey);
+                    break;
+                case "Chest":
+                    System.out.println("You found a Chest!");
+                    // Increment collected chests on the CURRENT map
+                    gp.currentMapCollectedChests++;
+                    gp.currentMapObjects.remove(i); // Remove the collected chest
+
+                    System.out.println("Chests collected: " + gp.currentMapCollectedChests +
+                            " / " + gp.totalChestsOnCurrentMap);
+
+                    // Check if all chests on the current map have been collected
+                    if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
+                        System.out.println("All chests collected! Opening the level exit door...");
+                        // Find the "Door" (level exit door) and open i\\openLevelExitDoor();
+                    }
+                    break;
+                case "Door":
+                    if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
+                        System.out.println("You may now advance to the next level");
+                        gp.currentMapObjects.remove(i);
+                    }
+                    break;
+                default:
+                    System.out.println("Interacted with: " + objectName);
             }
-            worldX = (gp.maxScreenCol - 1) * gp.tileSize; // Adjust player position to the opposite side
-        } else if (worldX >= gp.maxScreenCol * gp.tileSize) {
-            if (currentMap.equals("map1")) {
-                gp.tileM.changeMap("map2"); // Move to map2 when exiting right from map1
-                currentMap = "map2";
-            } else if (currentMap.equals("map2")) {
-                gp.tileM.changeMap("map3"); // Move to map3 when exiting right from map2
-                currentMap = "map3";
-            } else if (currentMap.equals("map3")) {
-                gp.tileM.changeMap("map1"); // Move to map1 when exiting right from map3
-                currentMap = "map1";
-            }
-            worldX = 0; // Adjust player position to the opposite side
-        } else if (worldY < 0) {
-            // Handle vertical transitions (if applicable)
-            // Example: Add logic for moving up between maps
-        } else if (worldY >= gp.maxScreenRow * gp.tileSize) {
-            // Handle vertical transitions (if applicable)
-            // Example: Add logic for moving down between maps
         }
+    }
+// In Player.java
+
+    private void handleMapChange() {
+        String nextMapName = currentMap; // Initialize with current map
+
+        // Store the player's worldX and worldY BEFORE changing them,
+        // as these might be useful for precise entry points.
+        int playerCurrentWorldX = worldX;
+        int playerCurrentWorldY = worldY;
+
+        // --- Horizontal Transitions ---
+        if (playerCurrentWorldX < 0) { // Exiting left
+            if (currentMap.equals("map1")) { nextMapName = "map3"; }
+            else if (currentMap.equals("map3")) { nextMapName = "map2"; }
+            else if (currentMap.equals("map2")) { nextMapName = "map1"; }
+
+            // Teleport to the right edge of the new map
+            worldX = (gp.maxScreenCol - 1) * gp.tileSize;
+            // Maintain the same Y position on the new map
+            // If your maps align vertically, this is often sufficient.
+            // worldY = playerCurrentWorldY; // This line might already be implicitly true if not reset elsewhere
+            // But explicitly setting it helps prevent unexpected resets.
+
+        } else if (playerCurrentWorldX >= gp.maxScreenCol * gp.tileSize) { // Exiting right
+            if (currentMap.equals("map1")) { nextMapName = "map2"; }
+            else if (currentMap.equals("map2")) { nextMapName = "map3"; }
+            else if (currentMap.equals("map3")) { nextMapName = "map1"; }
+
+            // Teleport to the left edge of the new map
+            worldX = 0;
+            // Maintain the same Y position on the new map
+            // worldY = playerCurrentWorldY;
+
+        }
+        // --- Vertical Transitions (if you plan to add them) ---
+        else if (playerCurrentWorldY < 0) { // Exiting top
+            // Example: logic to determine nextMapName for vertical transitions
+            // E.g., if (currentMap.equals("map1")) { nextMapName = "map4"; } etc.
+
+            worldY = (gp.maxScreenRow - 1) * gp.tileSize; // Teleport to bottom edge
+            // Maintain X position
+            // worldX = playerCurrentWorldX;
+
+        } else if (playerCurrentWorldY >= gp.maxScreenRow * gp.tileSize) { // Exiting bottom
+            // Example: logic to determine nextMapName for vertical transitions
+
+            worldY = 0; // Teleport to top edge
+            // Maintain X position
+            // worldX = playerCurrentWorldX;
+        }
+
+
+        // Apply the map change only if a new map was determined
+        if (!nextMapName.equals(currentMap)) {
+            gp.tileM.changeMap(nextMapName); // Change the tile map
+            currentMap = nextMapName;        // Update player's current map tracker
+
+            // Load/switch objects for the new map (choose one based on your implementation)
+            // If using Method 1 (Pre-load All Objects):
+            gp.currentMapObjects = gp.mapObjects.get(nextMapName);
+            // If using Method 2 (Load Objects On-Demand):
+            // gp.aSetter.setObjectsForCurrentMap(nextMapName);
+        }
+        // else: No map change occurred (e.g., player hit boundary but no linked map)
+        // In this case, you might want to prevent movement past the boundary:
+        // This is already handled by collision detection usually.
+        // If not, you could explicitly set worldX/worldY back to the boundary:
+        // if (playerCurrentWorldX < 0) worldX = 0;
+        // else if (playerCurrentWorldX >= gp.maxScreenCol * gp.tileSize) worldX = (gp.maxScreenCol * gp.tileSize) - 1;
+        // etc.
+        gp.currentMapCollectedChests = 0;
+        gp.totalChestsOnCurrentMap = gp.mapTotalChestCounts.get(currentMap);
     }
 
     public void resetPosition() {
-        worldX = gp.tileSize * 15;
+        worldX = gp.tileSize * 2;
         worldY = gp.tileSize * 12;
-        direction = "right";
+        speed = gp.tileSize / 8;
+        direction = "down";
     }
 
     @Override

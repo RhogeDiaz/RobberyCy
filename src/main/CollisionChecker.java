@@ -1,6 +1,7 @@
 package main;
 
 import entity.Entity;
+import object.SuperObject;
 
 public class CollisionChecker {
 
@@ -85,5 +86,52 @@ public class CollisionChecker {
                 break;
             default:
         }
+    }
+
+    public int checkObject(Entity entity, boolean player) {
+        int index = 999;
+
+        for (int i = 0; i < gp.currentMapObjects.size(); i++) {
+            SuperObject obj = gp.currentMapObjects.get(i);
+
+            if (obj != null) {
+                entity.solidArea.x = entity.worldX + entity.solidAreaDefaultX;
+                entity.solidArea.y = entity.worldY + entity.solidAreaDefaultY;
+                obj.solidArea.x = obj.worldX + obj.solidAreaDefaultX;
+                obj.solidArea.y = obj.worldY + obj.solidAreaDefaultY;
+
+                // Simulate entity's next position before checking collision
+                // This is the correct place to apply directional movement for collision prediction
+                int entitySolidAreaXtemp = entity.solidArea.x; // Store current position before simulating
+                int entitySolidAreaYtemp = entity.solidArea.y;
+
+                switch (entity.getDirection()) {
+                    case "up":    entity.solidArea.y -= entity.getSpeed(); break;
+                    case "down":  entity.solidArea.y += entity.getSpeed(); break;
+                    case "left":  entity.solidArea.x -= entity.getSpeed(); break;
+                    case "right": entity.solidArea.x += entity.getSpeed(); break;
+                }
+
+                if (entity.solidArea.intersects(obj.solidArea)) {
+                    // IMPORTANT: Only set collisionOn to true IF the object is intended to block movement
+                    if (obj.collision == true) { // <-- This condition is key!
+                        entity.collisionOn = true;
+                    }
+
+                    if (player == true) {
+                        index = i; // Still return index for interaction even if obj.collision is false
+                    }
+                }
+
+                // Reset entity's solid area to its *original* position for the next check,
+                // or if it was modified for a different object check.
+                // Also reset obj's solid area
+                entity.solidArea.x = entity.solidAreaDefaultX;
+                entity.solidArea.y = entity.solidAreaDefaultY;
+                obj.solidArea.x = obj.solidAreaDefaultX;
+                obj.solidArea.y = obj.solidAreaDefaultY;
+            }
+        }
+        return index;
     }
 }

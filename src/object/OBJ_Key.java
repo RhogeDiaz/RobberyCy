@@ -14,5 +14,7 @@ public class OBJ_Key extends SuperObject {
             e.printStackTrace();
         }
         collision = false;
+
+        solidAreaDefaultX = solidArea.x;
     }
 }

@@ -11,6 +11,7 @@ public abstract class Entity {
     protected int spriteCounter = 0; // Counter for sprite animation
     protected int spriteNum = 1; // Current sprite number (1 or 2)
     public Rectangle solidArea;
+    public int solidAreaDefaultX, solidAreaDefaultY;
     public boolean collisionOn = false;
 
     // Getters and setters
