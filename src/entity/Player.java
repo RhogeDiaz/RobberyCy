@@ -249,6 +249,7 @@ public class Player extends Entity {
             // Load/switch objects for the new map (choose one based on your implementation)
             // If using Method 1 (Pre-load All Objects):
             gp.currentMapObjects = gp.mapObjects.get(nextMapName);
+            gp.currentMapObstacles = gp.mapObstacles.get(nextMapName); // <-- Add this line
             // If using Method 2 (Load Objects On-Demand):
             // gp.aSetter.setObjectsForCurrentMap(nextMapName);
         }

@@ -2,6 +2,7 @@
 package main;
 
 import object.*;
+import entity.Obstacle;
 
 import java.util.ArrayList; // Import ArrayList
 
@@ -194,5 +195,23 @@ public class AssetSetter {
         Key5_map3.worldX = 22 * gp.tileSize;
         Key5_map3.worldY = 6 * gp.tileSize;
         map3Objs.add(Key5_map3);
+    }
+
+    public void setObstaclesForAllMaps() {
+        for (ArrayList<Obstacle> list : gp.mapObstacles.values()) {
+            list.clear();
+        }
+        // --- Obstacles for MAP1 ---
+        ArrayList<Obstacle> map1Obs = gp.mapObstacles.get("map1");
+        map1Obs.add(new Obstacle(5 * gp.tileSize, 5 * gp.tileSize, 4, true, gp.tileSize)); // Example
+        map1Obs.add(new Obstacle(10 * gp.tileSize, 8 * gp.tileSize, 3, false, gp.tileSize)); // Example
+
+        // --- Obstacles for MAP2 ---
+        ArrayList<Obstacle> map2Obs = gp.mapObstacles.get("map2");
+        map2Obs.add(new Obstacle(15 * gp.tileSize, 10 * gp.tileSize, 5, true, gp.tileSize)); // Example
+
+        // --- Obstacles for MAP3 ---
+        ArrayList<Obstacle> map3Obs = gp.mapObstacles.get("map3");
+        map3Obs.add(new Obstacle(20 * gp.tileSize, 15 * gp.tileSize, 2, false, gp.tileSize)); // Example
     }
 }

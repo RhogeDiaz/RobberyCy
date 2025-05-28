@@ -3,6 +3,7 @@ package main;
 import javax.swing.*;
 
 import entity.Player;
+import entity.Obstacle;
 import object.SuperObject;
 import tiles.TileManager;
 
@@ -35,6 +36,8 @@ public class  GamePanel extends JPanel implements Runnable {
     public UI ui = new UI(this);
     public Map<String, ArrayList<SuperObject>> mapObjects;
     public ArrayList<SuperObject> currentMapObjects;
+    public Map<String, ArrayList<Obstacle>> mapObstacles = new HashMap<>();
+    public ArrayList<Obstacle> currentMapObstacles;
 
     public HashMap<String, Integer> mapTotalChestCounts = new HashMap<>();
     public int totalChestsOnCurrentMap = 0;
@@ -59,11 +62,17 @@ public class  GamePanel extends JPanel implements Runnable {
         mapObjects.put("map2", new ArrayList<>());
         mapObjects.put("map3", new ArrayList<>());
 
+        mapObstacles.put("map1", new ArrayList<>());
+        mapObstacles.put("map2", new ArrayList<>());
+        mapObstacles.put("map3", new ArrayList<>());
+
+
         mapTotalChestCounts.put("map1", 3);
         mapTotalChestCounts.put("map2", 4);
         mapTotalChestCounts.put("map3", 4);
 
         currentMapObjects = mapObjects.get(currentMap);
+        currentMapObstacles = mapObstacles.get(currentMap);
         tileM = new TileManager(this);
         player = new Player(this,keyH);
         aSetter = new AssetSetter(this);
@@ -79,6 +88,7 @@ public class  GamePanel extends JPanel implements Runnable {
     public void setupGame() {
         // This should be called only ONCE at the beginning of the game.
         aSetter.setObjectsForAllMaps(); // Call the AssetSetter
+        aSetter.setObstaclesForAllMaps(); // Add this line
         // (Ensure your player.getPlayerImage() and tileM.getTileImage() are also called)
         totalChestsOnCurrentMap = mapTotalChestCounts.get(currentMap);
         player.getPlayerImage(); // Make sure player images are loaded
@@ -117,6 +127,11 @@ public class  GamePanel extends JPanel implements Runnable {
 
     public void update() {
         player.update();
+        if (currentMapObstacles != null) {
+            for (Obstacle obs : currentMapObstacles) {
+                obs.update();
+            }
+        }
     }
 
     // In GamePanel.java
@@ -132,6 +147,12 @@ public class  GamePanel extends JPanel implements Runnable {
                 obj.draw(g2, this);
             }
         } else {
+        }
+
+        if (currentMapObstacles != null) {
+            for (Obstacle obs : currentMapObstacles) {
+                obs.draw(g2);
+            }
         }
 
         player.draw(g2);
