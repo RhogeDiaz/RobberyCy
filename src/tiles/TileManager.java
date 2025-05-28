@@ -1,5 +1,6 @@
 package tiles;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
@@ -7,8 +8,8 @@ import main.GamePanel;
 
 public class TileManager {
     GamePanel gp;
-    Tile[] tile;
-    int[][] mapTileNum; // 2D array to store the tile numbers
+    public Tile[] tile;
+    public int[][] mapTileNum; // 2D array to store the tile numbers
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
@@ -25,9 +26,23 @@ public class TileManager {
 
             tile[1] = new Tile();
             tile[1].image = ImageIO.read(getClass().getResourceAsStream("/tiles/2.png"));
+            tile[1].collision = true;
 
             tile[2] = new Tile();
             tile[2].image = ImageIO.read(getClass().getResourceAsStream("/tiles/3.png"));
+            tile[2].collision = true;
+
+            tile[3] = new Tile();
+            tile[3].image = ImageIO.read(getClass().getResourceAsStream("/tiles/floor.png"));
+
+            tile[4] = new Tile();
+            tile[4].image = ImageIO.read(getClass().getResourceAsStream("/tiles/floor2.png"));
+
+            tile[5] = new Tile();
+            tile[5].image = ImageIO.read(getClass().getResourceAsStream("/tiles/floor5.png"));
+
+            tile[6] = new Tile();
+            tile[6].image = ImageIO.read(getClass().getResourceAsStream("/tiles/floor6.png"));
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -66,7 +81,7 @@ public class TileManager {
         gp.player.resetPosition(); // Reset the player's position
     }
 
-    public void draw(java.awt.Graphics2D g2) {
+    public void draw(Graphics2D g2) {
         int col = 0;
         int row = 0;
         int x = 0;

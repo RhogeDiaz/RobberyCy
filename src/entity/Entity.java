@@ -1,21 +1,24 @@
 package entity;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Entity {
-    protected int x, y;
+    public int worldX, worldY;
     protected int speed;
     protected BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
     protected String direction; // Direction of the entity (up, down, left, right)
     protected int spriteCounter = 0; // Counter for sprite animation
     protected int spriteNum = 1; // Current sprite number (1 or 2)
+    public Rectangle solidArea;
+    public boolean collisionOn = false;
 
     // Getters and setters
-    public int getX() { return x; }
-    public void setX(int x) { this.x = x; }
+    public int getX() { return worldX; }
+    public void setX(int x) { this.worldX = x; }
 
-    public int getY() { return y; }
-    public void setY(int y) { this.y = y; }
+    public int getY() { return worldY; }
+    public void setY(int y) { this.worldY = y; }
 
     public int getSpeed() { return speed; }
     public void setSpeed(int speed) { this.speed = speed; }

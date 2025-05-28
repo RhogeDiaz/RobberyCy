@@ -1,6 +1,6 @@
 package entity;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
@@ -11,6 +11,7 @@ import main.KeyHandler;
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
+
     private boolean keyProcessed = false;
     private long lastMoveTime = 0; // Track the last movement time
     private final int moveDelay = 0; // Delay in milliseconds
@@ -19,6 +20,11 @@ public class Player extends Entity {
     public Player(GamePanel gp, KeyHandler keyH){
         this.gp = gp;
         this.keyH = keyH;
+        solidArea = new Rectangle();
+        solidArea.x = 0;
+        solidArea.y = 8;
+        solidArea.width = 24;
+        solidArea.height = 16;
 
         setDefaultValues();
         getPlayerImage(); // Ensure images are loaded during initialization
@@ -26,8 +32,8 @@ public class Player extends Entity {
 
     @Override
     public void setDefaultValues(){
-        x = gp.tileSize * 15;
-        y = gp.tileSize * 12;
+        worldX = gp.tileSize * 2;
+        worldY = gp.tileSize * 12;
         speed = gp.tileSize / 8;
         direction = "right";
     }
@@ -56,27 +62,43 @@ public class Player extends Entity {
             if(keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true){
             if (keyH.upPressed) {
                 direction = "up";
-                y -= speed;
                 // keyProcessed = true;
                 lastMoveTime = currentTime;
             } else if (keyH.downPressed) {
                 direction = "down";
-                y += speed; 
                 // keyProcessed = true;
                 lastMoveTime = currentTime;
             } else if (keyH.leftPressed) {
                 direction = "left";
-                x -= speed;
                 // keyProcessed = true;
                 lastMoveTime = currentTime;
             } else if (keyH.rightPressed) {
                 direction = "right";
-                x += speed;
                 // keyProcessed = true;
                 lastMoveTime = currentTime; 
             }
         
+            collisionOn = false;
+            gp.cChecker.checkTile(this);
 
+            if(collisionOn == false){
+
+                switch (direction) {
+                    case "up":
+                        worldY -= speed;
+                        break;
+                    case "down":
+                        worldY += speed;
+                        break;
+                    case "left":
+                        worldX -= speed;
+                        break;
+                    case "right":
+                        worldX += speed;
+                        break;
+                    default:
+                }
+            }
         // Update sprite animation
         spriteCounter++;
         if (spriteCounter > 12) { // Adjust the speed of sprite animation
@@ -91,7 +113,7 @@ public class Player extends Entity {
     }
 
         // Check if the player has moved outside the map boundaries
-        if (x < 0 || x >= gp.maxScreenCol * gp.tileSize || y < 0 || y >= gp.maxScreenRow * gp.tileSize) {
+        if (worldX < 0 || worldX >= gp.maxScreenCol * gp.tileSize || worldY < 0 || worldY >= gp.maxScreenRow * gp.tileSize) {
             handleMapChange();
         }
 
@@ -102,7 +124,7 @@ public class Player extends Entity {
     }
 
     private void handleMapChange() {
-        if (x < 0) {
+        if (worldX < 0) {
             if (currentMap.equals("map1")) {
                 gp.tileM.changeMap("map3"); // Move to map3 when exiting left from map1
                 currentMap = "map3";
@@ -113,8 +135,8 @@ public class Player extends Entity {
                 gp.tileM.changeMap("map1"); // Move to map1 when exiting left from map2
                 currentMap = "map1";
             }
-            x = (gp.maxScreenCol - 1) * gp.tileSize; // Adjust player position to the opposite side
-        } else if (x >= gp.maxScreenCol * gp.tileSize) {
+            worldX = (gp.maxScreenCol - 1) * gp.tileSize; // Adjust player position to the opposite side
+        } else if (worldX >= gp.maxScreenCol * gp.tileSize) {
             if (currentMap.equals("map1")) {
                 gp.tileM.changeMap("map2"); // Move to map2 when exiting right from map1
                 currentMap = "map2";
@@ -125,19 +147,19 @@ public class Player extends Entity {
                 gp.tileM.changeMap("map1"); // Move to map1 when exiting right from map3
                 currentMap = "map1";
             }
-            x = 0; // Adjust player position to the opposite side
-        } else if (y < 0) {
+            worldX = 0; // Adjust player position to the opposite side
+        } else if (worldY < 0) {
             // Handle vertical transitions (if applicable)
             // Example: Add logic for moving up between maps
-        } else if (y >= gp.maxScreenRow * gp.tileSize) {
+        } else if (worldY >= gp.maxScreenRow * gp.tileSize) {
             // Handle vertical transitions (if applicable)
             // Example: Add logic for moving down between maps
         }
     }
 
     public void resetPosition() {
-        x = gp.tileSize * 15;
-        y = gp.tileSize * 12;
+        worldX = gp.tileSize * 15;
+        worldY = gp.tileSize * 12;
         direction = "right";
     }
 
@@ -176,11 +198,11 @@ public class Player extends Entity {
         }
 
         if (image != null) {
-            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null); // Draw the player image
+            g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null); // Draw the player image
         } else {
             System.out.println(image);
             g2.setColor(java.awt.Color.white);
-            g2.fillRect(x, y, gp.tileSize, gp.tileSize);
+            g2.fillRect(worldX, worldY, gp.tileSize, gp.tileSize);
         }
     }
 
