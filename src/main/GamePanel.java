@@ -1,6 +1,7 @@
 package main;
 
-import javax.swing.JPanel;
+import javax.swing.*;
+
 import entity.Player;
 import object.SuperObject;
 import tiles.TileManager;
@@ -31,6 +32,7 @@ public class  GamePanel extends JPanel implements Runnable {
     public AssetSetter aSetter = new AssetSetter(this);
     public TileManager tileM = new TileManager(this);
 
+    public UI ui = new UI(this);
     public Map<String, ArrayList<SuperObject>> mapObjects;
     public ArrayList<SuperObject> currentMapObjects;
 
@@ -132,8 +134,9 @@ public class  GamePanel extends JPanel implements Runnable {
         } else {
         }
 
-
         player.draw(g2);
+
+        ui.draw(g2);
 
         g2.dispose();
     }

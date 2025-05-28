@@ -12,7 +12,7 @@ import object.SuperObject;
 public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
-    int hasKey = 0;
+    public int hasKey = 0;
     private boolean keyProcessed = false;
     private long lastMoveTime = 0; // Track the last movement time
     private final int moveDelay = 0; // Delay in milliseconds
@@ -150,38 +150,38 @@ public class Player extends Entity {
 
             switch (objectName) {
                 case "Key":
-                    System.out.println("You picked up a Key!");
                     hasKey++;
                     gp.currentMapObjects.remove(i);
-                    System.out.println("Key: " + hasKey);
+                    gp.ui.showMessage("You got a key!");
                     break;
                 case "Door Blue":
-                    System.out.println("You touched a Door!");
                     if(hasKey > 0){
                         gp.currentMapObjects.remove(i);
                         hasKey--;
+                        gp.ui.showMessage("You opened a blue door!");
                     }
-                    System.out.println("Key: " + hasKey);
+                    else{
+                        gp.ui.showMessage("You need a key!");
+                    }
                     break;
                 case "Chest":
-                    System.out.println("You found a Chest!");
-                    // Increment collected chests on the CURRENT map
                     gp.currentMapCollectedChests++;
-                    gp.currentMapObjects.remove(i); // Remove the collected chest
+                    gp.currentMapObjects.remove(i);
 
                     System.out.println("Chests collected: " + gp.currentMapCollectedChests +
                             " / " + gp.totalChestsOnCurrentMap);
 
-                    // Check if all chests on the current map have been collected
                     if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
-                        System.out.println("All chests collected! Opening the level exit door...");
-                        // Find the "Door" (level exit door) and open i\\openLevelExitDoor();
+                        gp.ui.showMessage("All chest secured! Proceed to next level!");
                     }
                     break;
                 case "Door":
                     if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
-                        System.out.println("You may now advance to the next level");
                         gp.currentMapObjects.remove(i);
+                        gp.ui.showMessage("To the next level!");
+                    }
+                    else {
+                        gp.ui.showMessage("Collect all the treasure first!");
                     }
                     break;
                 default:
