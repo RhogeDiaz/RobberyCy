@@ -203,15 +203,21 @@ public class AssetSetter {
         }
         // --- Obstacles for MAP1 ---
         ArrayList<Obstacle> map1Obs = gp.mapObstacles.get("map1");
-        map1Obs.add(new Obstacle(5 * gp.tileSize, 5 * gp.tileSize, 4, true, gp.tileSize)); // Example
-        map1Obs.add(new Obstacle(10 * gp.tileSize, 8 * gp.tileSize, 3, false, gp.tileSize)); // Example
+        map1Obs.add(new Obstacle(10 * gp.tileSize, 7 * gp.tileSize, 2, false, gp.tileSize)); // Example
+        map1Obs.add(new Obstacle(11 * gp.tileSize, 10 * gp.tileSize, 2, true, gp.tileSize)); // Example
+        map1Obs.add(new Obstacle(10 * gp.tileSize, 11 * gp.tileSize, 2, false, gp.tileSize)); // Example
+        map1Obs.add(new Obstacle(18 * gp.tileSize, 5 * gp.tileSize, 2, false, gp.tileSize)); // Example
 
         // --- Obstacles for MAP2 ---
         ArrayList<Obstacle> map2Obs = gp.mapObstacles.get("map2");
-        map2Obs.add(new Obstacle(15 * gp.tileSize, 10 * gp.tileSize, 5, true, gp.tileSize)); // Example
+        map2Obs.add(new Obstacle(11 * gp.tileSize, 9 * gp.tileSize, 3, false, gp.tileSize)); // Example
+        map2Obs.add(new Obstacle(4 * gp.tileSize, 20 * gp.tileSize, 7, true, gp.tileSize)); // Example
+        map2Obs.add(new Obstacle(19 * gp.tileSize, 8 * gp.tileSize, 8, true, gp.tileSize)); // Example
 
         // --- Obstacles for MAP3 ---
         ArrayList<Obstacle> map3Obs = gp.mapObstacles.get("map3");
-        map3Obs.add(new Obstacle(20 * gp.tileSize, 15 * gp.tileSize, 2, false, gp.tileSize)); // Example
+        map3Obs.add(new Obstacle(21 * gp.tileSize, 17 * gp.tileSize, 5, false, gp.tileSize)); // Example
+        map3Obs.add(new Obstacle(23 * gp.tileSize, 8 * gp.tileSize, 4, false, gp.tileSize)); // Example
+        map3Obs.add(new Obstacle(7 * gp.tileSize, 5 * gp.tileSize, 6, false, gp.tileSize)); // Example
     }
 }

@@ -128,6 +128,46 @@ public class Player extends Entity {
             handleMapChange();
         }
 
+        // --- OBSTACLE COLLISION LOGIC ---
+        if (gp.cChecker.checkObstacleCollision(this)) {
+            gp.gameThread = null; // Pause the game loop
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                int result = javax.swing.JOptionPane.showOptionDialog(
+                    null,
+                    "You've been caught!",
+                    "Game Over",
+                    javax.swing.JOptionPane.DEFAULT_OPTION,
+                    javax.swing.JOptionPane.ERROR_MESSAGE,
+                    null,
+                    new Object[]{"Retry", "Quit"},
+                    "Retry"
+                );
+                if (result == 0) { // Retry
+                    setDefaultValues();
+                    // Reset all obstacles to their default positions
+                    if (gp.currentMapObstacles != null) {
+                        for (entity.Obstacle obs : gp.currentMapObstacles) {
+                            obs.setDefaultValues();
+                        }
+                    }
+                    // Reset all objects (keys, chests, etc.) to their original positions
+                    gp.aSetter.setObjectsForAllMaps();
+                    gp.currentMapObjects = gp.mapObjects.get(currentMap);
+                    // --- Clear movement keys to prevent auto-move bug ---
+                    gp.keyH.upPressed = false;
+                    gp.keyH.downPressed = false;
+                    gp.keyH.leftPressed = false;
+                    gp.keyH.rightPressed = false;
+                    gp.elapsedMillis = 0;
+                    gp.lastUpdateTime = System.nanoTime();
+                    gp.gameThread = new Thread(gp);
+                    gp.gameThread.start();
+                } else { // Quit
+                    System.exit(0);
+                }
+            });
+        }
+
         // *** IMPORTANT: REMOVE THESE FIELDS AND ANY OTHER RELATED LOGIC ***
         // Delete these variable declarations from your Player class if they still exist:
         // private boolean keyProcessed;

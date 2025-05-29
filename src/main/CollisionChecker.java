@@ -134,4 +134,30 @@ public class CollisionChecker {
         }
         return index;
     }
+
+    public boolean checkObstacleCollision(Entity entity) {
+        for (entity.Obstacle obs : gp.currentMapObstacles) {
+            // Set solid areas to world position
+            entity.solidArea.x = entity.worldX + entity.solidAreaDefaultX;
+            entity.solidArea.y = entity.worldY + entity.solidAreaDefaultY;
+            obs.solidArea.x = obs.worldX + obs.solidAreaDefaultX;
+            obs.solidArea.y = obs.worldY + obs.solidAreaDefaultY;
+
+            if (entity.solidArea.intersects(obs.solidArea)) {
+                // Reset solid areas before returning
+                entity.solidArea.x = entity.solidAreaDefaultX;
+                entity.solidArea.y = entity.solidAreaDefaultY;
+                obs.solidArea.x = obs.solidAreaDefaultX;
+                obs.solidArea.y = obs.solidAreaDefaultY;
+                return true;
+            }
+
+            // Reset solid areas for next check
+            entity.solidArea.x = entity.solidAreaDefaultX;
+            entity.solidArea.y = entity.solidAreaDefaultY;
+            obs.solidArea.x = obs.solidAreaDefaultX;
+            obs.solidArea.y = obs.solidAreaDefaultY;
+        }
+        return false;
+    }
 }
