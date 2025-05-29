@@ -45,7 +45,11 @@ public class  GamePanel extends JPanel implements Runnable {
 
 
     public String currentMap = "map1";
+    public int elapsedSeconds = 0;
+    private int timerFrameCounter = 0;
 
+    public long elapsedMillis = 0;
+    private long lastUpdateTime = System.nanoTime();
 
     Thread gameThread;
 
@@ -132,6 +136,10 @@ public class  GamePanel extends JPanel implements Runnable {
                 obs.update();
             }
         }
+        // --- TIMER LOGIC (real time, with ms) ---
+        long now = System.nanoTime();
+        elapsedMillis += (now - lastUpdateTime) / 1_000_000;
+        lastUpdateTime = now;
     }
 
     // In GamePanel.java

@@ -63,6 +63,15 @@ public class UI {
             g2.drawImage(keyImage, gp.tileSize, gp.tileSize * 1, gp.tileSize * 2, gp.tileSize * 2, null);
             g2.drawString("x " + gp.player.hasKey, 95, 80);
 
+            // --- TIMER DRAW ---
+            long totalMillis = gp.elapsedMillis;
+            long minutes = (totalMillis / 1000) / 60;
+            long seconds = (totalMillis / 1000) % 60;
+            long millis = totalMillis % 1000;
+            String timerText = String.format("Time: %02d:%02d.%03d", minutes, seconds, millis);
+            int timerTextWidth = g2.getFontMetrics().stringWidth(timerText);
+            g2.drawString(timerText, gp.screenWidth - timerTextWidth - gp.tileSize, gp.tileSize * 2 + 20);
+
             if (messageOn) {
 
                 g2.setFont(g2.getFont().deriveFont(30F));
