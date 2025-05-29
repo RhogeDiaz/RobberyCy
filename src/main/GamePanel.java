@@ -49,9 +49,9 @@ public class  GamePanel extends JPanel implements Runnable {
     private int timerFrameCounter = 0;
 
     public long elapsedMillis = 0;
-    private long lastUpdateTime = System.nanoTime();
+    public long lastUpdateTime = System.nanoTime();
 
-    Thread gameThread;
+    public Thread gameThread;
 
     public GamePanel() {
         keyH = new KeyHandler();
