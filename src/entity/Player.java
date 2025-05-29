@@ -26,7 +26,7 @@ public class Player extends Entity {
         solidArea.y = 16;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
-        solidArea.width = 20;
+        solidArea.width = 16;
         solidArea.height = 16;
 
         setDefaultValues();
@@ -107,12 +107,7 @@ public class Player extends Entity {
                 }
             }
         }
-        // If no movement keys are pressed, the player will not move because the outer
-        // 'if (keyH.upPressed || ...)' condition is false.
-        // If collisionOn is true, the player will not move even if a key is pressed.
 
-
-        // 5. Update sprite animation (this should run even if the player is stuck or idle for animation)
         spriteCounter++;
         if (spriteCounter > 12) { // Adjust the speed of sprite animation
             if (spriteNum == 1) {
@@ -144,6 +139,8 @@ public class Player extends Entity {
                 );
                 if (result == 0) { // Retry
                     setDefaultValues();
+                    gp.currentMapCollectedChests = 0;
+                    gp.player.hasKey = 0;
                     // Reset all obstacles to their default positions
                     if (gp.currentMapObstacles != null) {
                         for (entity.Obstacle obs : gp.currentMapObstacles) {
@@ -168,22 +165,11 @@ public class Player extends Entity {
             });
         }
 
-        // *** IMPORTANT: REMOVE THESE FIELDS AND ANY OTHER RELATED LOGIC ***
-        // Delete these variable declarations from your Player class if they still exist:
-        // private boolean keyProcessed;
-        // private long lastMoveTime;
-        // private final long moveDelay = 100; // Or whatever value you used
-        // Also remove the 'long currentTime = System.currentTimeMillis();' from the update method.
     }
 
-    // In entity/Player.java
+    public void pickUpObject(int i) {
 
-    // Assuming this method is called within Player, and 'gp' is available
-// You might want to rename this to interactObject and put all interaction logic here,
-// as we discussed in a previous step.
-    public void pickUpObject(int i) { // Changed 'i' to 'index' for clarity
-
-        if (i != 999) { // 999 means no object was collided with
+        if (i != 999) {
             SuperObject obj = gp.currentMapObjects.get(i); // Get the object instance
 
             String objectName = obj.name; // Get the name for specific handling
@@ -212,21 +198,24 @@ public class Player extends Entity {
                             " / " + gp.totalChestsOnCurrentMap);
 
                     if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
-                        gp.ui.showMessage("All chest secured! Proceed to next level!");
+                        gp.ui.showMessage("Proceed to next level!");
                     }
                     break;
                 case "Door":
                     if (gp.currentMapCollectedChests >= gp.totalChestsOnCurrentMap) {
                         gp.currentMapObjects.remove(i);
                         gp.ui.showMessage("To the next level!");
+
                     }
                     else {
                         gp.ui.showMessage("Collect all the treasure first!");
                     }
                     break;
-                default:
-                    System.out.println("Interacted with: " + objectName);
+                case "FinalDoor":
+                    gp.ui.gameFinished =  true;
+                    break;
             }
+
         }
     }
 // In Player.java
@@ -234,8 +223,6 @@ public class Player extends Entity {
     private void handleMapChange() {
         String nextMapName = currentMap; // Initialize with current map
 
-        // Store the player's worldX and worldY BEFORE changing them,
-        // as these might be useful for precise entry points.
         int playerCurrentWorldX = worldX;
         int playerCurrentWorldY = worldY;
 
@@ -245,61 +232,23 @@ public class Player extends Entity {
             else if (currentMap.equals("map3")) { nextMapName = "map2"; }
             else if (currentMap.equals("map2")) { nextMapName = "map1"; }
 
-            // Teleport to the right edge of the new map
             worldX = (gp.maxScreenCol - 1) * gp.tileSize;
-            // Maintain the same Y position on the new map
-            // If your maps align vertically, this is often sufficient.
-            // worldY = playerCurrentWorldY; // This line might already be implicitly true if not reset elsewhere
-            // But explicitly setting it helps prevent unexpected resets.
 
         } else if (playerCurrentWorldX >= gp.maxScreenCol * gp.tileSize) { // Exiting right
             if (currentMap.equals("map1")) { nextMapName = "map2"; }
             else if (currentMap.equals("map2")) { nextMapName = "map3"; }
             else if (currentMap.equals("map3")) { nextMapName = "map1"; }
 
-            // Teleport to the left edge of the new map
             worldX = 0;
-            // Maintain the same Y position on the new map
-            // worldY = playerCurrentWorldY;
-
-        }
-        // --- Vertical Transitions (if you plan to add them) ---
-        else if (playerCurrentWorldY < 0) { // Exiting top
-            // Example: logic to determine nextMapName for vertical transitions
-            // E.g., if (currentMap.equals("map1")) { nextMapName = "map4"; } etc.
-
-            worldY = (gp.maxScreenRow - 1) * gp.tileSize; // Teleport to bottom edge
-            // Maintain X position
-            // worldX = playerCurrentWorldX;
-
-        } else if (playerCurrentWorldY >= gp.maxScreenRow * gp.tileSize) { // Exiting bottom
-            // Example: logic to determine nextMapName for vertical transitions
-
-            worldY = 0; // Teleport to top edge
-            // Maintain X position
-            // worldX = playerCurrentWorldX;
         }
 
-
-        // Apply the map change only if a new map was determined
         if (!nextMapName.equals(currentMap)) {
-            gp.tileM.changeMap(nextMapName); // Change the tile map
-            currentMap = nextMapName;        // Update player's current map tracker
+            gp.tileM.changeMap(nextMapName);
+            currentMap = nextMapName;
 
-            // Load/switch objects for the new map (choose one based on your implementation)
-            // If using Method 1 (Pre-load All Objects):
             gp.currentMapObjects = gp.mapObjects.get(nextMapName);
-            gp.currentMapObstacles = gp.mapObstacles.get(nextMapName); // <-- Add this line
-            // If using Method 2 (Load Objects On-Demand):
-            // gp.aSetter.setObjectsForCurrentMap(nextMapName);
+            gp.currentMapObstacles = gp.mapObstacles.get(nextMapName);
         }
-        // else: No map change occurred (e.g., player hit boundary but no linked map)
-        // In this case, you might want to prevent movement past the boundary:
-        // This is already handled by collision detection usually.
-        // If not, you could explicitly set worldX/worldY back to the boundary:
-        // if (playerCurrentWorldX < 0) worldX = 0;
-        // else if (playerCurrentWorldX >= gp.maxScreenCol * gp.tileSize) worldX = (gp.maxScreenCol * gp.tileSize) - 1;
-        // etc.
         gp.currentMapCollectedChests = 0;
         gp.totalChestsOnCurrentMap = gp.mapTotalChestCounts.get(currentMap);
     }

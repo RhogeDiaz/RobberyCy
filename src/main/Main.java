@@ -18,8 +18,7 @@ public class Main {
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 
-		// *** ADD THIS LINE ***
-		gamePanel.requestFocusInWindow(); // Explicitly request focus for the panel
+		gamePanel.requestFocusInWindow();
 
 		gamePanel.setupGame();
 		gamePanel.startGameThread();

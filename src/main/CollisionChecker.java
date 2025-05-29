@@ -123,9 +123,6 @@ public class CollisionChecker {
                     }
                 }
 
-                // Reset entity's solid area to its *original* position for the next check,
-                // or if it was modified for a different object check.
-                // Also reset obj's solid area
                 entity.solidArea.x = entity.solidAreaDefaultX;
                 entity.solidArea.y = entity.solidAreaDefaultY;
                 obj.solidArea.x = obj.solidAreaDefaultX;

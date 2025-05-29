@@ -13,9 +13,6 @@ public class AssetSetter {
     public AssetSetter(GamePanel gp) {
         this.gp = gp;
     }
-
-    // New method to set objects for all maps
-    // In AssetSetter.java
     public void setObjectsForAllMaps(){
 
         for(ArrayList<SuperObject> list : gp.mapObjects.values()){
@@ -141,10 +138,10 @@ public class AssetSetter {
         Chest4_map3.worldY = 22 * gp.tileSize;
         map3Objs.add(Chest4_map3);
 
-        OBJ_Door Door1_map3 = new OBJ_Door();
-        Door1_map3.worldX = 31 * gp.tileSize;
-        Door1_map3.worldY = 12 * gp.tileSize;
-        map3Objs.add(Door1_map3);
+        OBJ_FinalDoor FinalDoor1_map3 = new OBJ_FinalDoor();
+        FinalDoor1_map3.worldX = 31 * gp.tileSize;
+        FinalDoor1_map3.worldY = 12 * gp.tileSize;
+        map3Objs.add(FinalDoor1_map3);
 
         OBJ_Door_Blue Door2_map3 = new OBJ_Door_Blue();
         Door2_map3.worldX = 13 * gp.tileSize;

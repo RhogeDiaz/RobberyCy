@@ -17,32 +17,34 @@ public class  GamePanel extends JPanel implements Runnable {
     final int fps = 60; // Frames per second
     final int originalTileSize = 16; // 16x16 tile
     final int scale = 2; // Scale the tile size by 3
-    
-    public final int tileSize = originalTileSize * scale; // 48x48 tile
-    
-    public final int maxScreenCol = 32; // 32 tiles across the screen
-    public final int maxScreenRow = 24; // 24 tiles down the screen
-    
-    public final int screenWidth = tileSize * maxScreenCol; // 768 pixels wide
-    public final int screenHeight = tileSize * maxScreenRow; // 576 pixels tall
-
-    public CollisionChecker cChecker = new CollisionChecker(this);
     public KeyHandler keyH;
+    public final int tileSize = originalTileSize * scale; // 48x48 tile
+
+    // Entity and objects
     public Player player = new Player(this, keyH);
-
-    public AssetSetter aSetter = new AssetSetter(this);
-    public TileManager tileM = new TileManager(this);
-
     public UI ui = new UI(this);
     public Map<String, ArrayList<SuperObject>> mapObjects;
     public ArrayList<SuperObject> currentMapObjects;
     public Map<String, ArrayList<Obstacle>> mapObstacles = new HashMap<>();
     public ArrayList<Obstacle> currentMapObstacles;
-
     public HashMap<String, Integer> mapTotalChestCounts = new HashMap<>();
     public int totalChestsOnCurrentMap = 0;
     public int currentMapCollectedChests = 0;
 
+    // Map
+    public final int maxScreenCol = 32; // 32 tiles across the screen
+    public final int maxScreenRow = 24; // 24 tiles down the screen
+    public final int screenWidth = tileSize * maxScreenCol; // 768 pixels wide
+    public final int screenHeight = tileSize * maxScreenRow; // 576 pixels tall
+    public CollisionChecker cChecker = new CollisionChecker(this);
+    public AssetSetter aSetter = new AssetSetter(this);
+    public TileManager tileM = new TileManager(this);
+
+    // Game state
+    public int gameState;
+    public final int titleState = 0;
+    public final int playState = 1;
+    public final int pauseState = 2;
 
     public String currentMap = "map1";
     public int elapsedSeconds = 0;
@@ -54,7 +56,7 @@ public class  GamePanel extends JPanel implements Runnable {
     public Thread gameThread;
 
     public GamePanel() {
-        keyH = new KeyHandler();
+        keyH = new KeyHandler(this);
         this.setPreferredSize(new java.awt.Dimension(screenWidth, screenHeight));
         this.setBackground(java.awt.Color.black);
         this.setDoubleBuffered(true); // Enable double buffering for smoother graphics
@@ -90,13 +92,12 @@ public class  GamePanel extends JPanel implements Runnable {
     }
 
     public void setupGame() {
-        // This should be called only ONCE at the beginning of the game.
         aSetter.setObjectsForAllMaps(); // Call the AssetSetter
         aSetter.setObstaclesForAllMaps(); // Add this line
-        // (Ensure your player.getPlayerImage() and tileM.getTileImage() are also called)
         totalChestsOnCurrentMap = mapTotalChestCounts.get(currentMap);
         player.getPlayerImage(); // Make sure player images are loaded
         tileM.getTileImage(); // Make sure tile images are loaded
+        gameState = titleState;
     }
 
     @Override
@@ -130,16 +131,21 @@ public class  GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
-        if (currentMapObstacles != null) {
-            for (Obstacle obs : currentMapObstacles) {
-                obs.update();
+
+        if(gameState == playState){
+            player.update();
+            if (currentMapObstacles != null) {
+                for (Obstacle obs : currentMapObstacles) {
+                    obs.update();
+                }
             }
+            // --- TIMER LOGIC (real time, with ms) ---
+            long now = System.nanoTime();
+            elapsedMillis += (now - lastUpdateTime) / 1_000_000;
+            lastUpdateTime = now;
         }
-        // --- TIMER LOGIC (real time, with ms) ---
-        long now = System.nanoTime();
-        elapsedMillis += (now - lastUpdateTime) / 1_000_000;
-        lastUpdateTime = now;
+        if(gameState == pauseState){}
+
     }
 
     // In GamePanel.java
@@ -148,24 +154,32 @@ public class  GamePanel extends JPanel implements Runnable {
         super.paintComponent(g); // Call parent paintComponent
 
         Graphics2D g2 = (Graphics2D)g;
-        tileM.draw(g2);
 
-        if (currentMapObjects != null) {
-            for(SuperObject obj : currentMapObjects) {
-                obj.draw(g2, this);
-            }
-        } else {
+        //Title Screen
+        if(gameState == titleState){
+            ui.draw(g2);
         }
+        else{
+            tileM.draw(g2);
 
-        if (currentMapObstacles != null) {
-            for (Obstacle obs : currentMapObstacles) {
-                obs.draw(g2);
+            if (currentMapObjects != null) {
+                for(SuperObject obj : currentMapObjects) {
+                    obj.draw(g2, this);
+                }
+            } else {
             }
+
+            if (currentMapObstacles != null) {
+                for (Obstacle obs : currentMapObstacles) {
+                    obs.draw(g2);
+                }
+            }
+
+            player.draw(g2);
+
+            ui.draw(g2);
+
         }
-
-        player.draw(g2);
-
-        ui.draw(g2);
 
         g2.dispose();
     }
