@@ -22,11 +22,11 @@ public class Player extends Entity {
         this.gp = gp;
         this.keyH = keyH;
         solidArea = new Rectangle();
-        solidArea.x = 0;
-        solidArea.y = 8;
+        solidArea.x = 8;
+        solidArea.y = 16;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
-        solidArea.width = 16;
+        solidArea.width = 20;
         solidArea.height = 16;
 
         setDefaultValues();
@@ -38,7 +38,7 @@ public class Player extends Entity {
         worldX = gp.tileSize * 2;
         worldY = gp.tileSize * 12;
         speed = gp.tileSize / 8;
-        direction = "down";
+        direction = "right";
     }
 
     public void getPlayerImage() {
@@ -268,7 +268,7 @@ public class Player extends Entity {
         worldX = gp.tileSize * 2;
         worldY = gp.tileSize * 12;
         speed = gp.tileSize / 8;
-        direction = "down";
+        direction = "right";
     }
 
     @Override
